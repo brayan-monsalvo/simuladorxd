@@ -8,6 +8,7 @@ public class Page
   public int lastTouchTime;
   public long high;
   public long low;
+  public int referenceBit;
 
   public Page( int id, int physical, byte R, byte M, int inMemTime, int lastTouchTime, long high, long low ) 
   {
@@ -19,6 +20,7 @@ public class Page
     this.lastTouchTime = lastTouchTime;
     this.high = high;
     this.low = low;
+    this.referenceBit = 0;
   } 	
 
 }
