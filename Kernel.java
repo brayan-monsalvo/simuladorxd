@@ -1,12 +1,15 @@
 import java.lang.Thread;
 import java.io.*;
 import java.util.*;
-import Page;
+//import Page;
 
 public class Kernel extends Thread
 {
   // The number of virtual pages must be fixed at 63 due to
   // dependencies in the GUI
+
+  //comentario random xd
+  
   private static int virtPageNum = 63;
 
   private String output = null;
