@@ -7,212 +7,215 @@ public class Kernel extends Thread
 {
   // The number of virtual pages must be fixed at 63 due to
   // dependencies in the GUI
-  private static int virtPageNum = 63;
+    private static int virtPageNum = 63;
 
-  private String output = null;
-  private static final String lineSeparator = 
+    private String output = null;
+    private static final String lineSeparator = 
     System.getProperty("line.separator");
-  private String command_file;
-  private String config_file;
-  private ControlPanel controlPanel ;
-  private Vector memVector = new Vector();
-  private Vector instructVector = new Vector();
-  private String status;
-  private boolean doStdoutLog = false;
-  private boolean doFileLog = false;
-  public int runs;
-  public int runcycles;
-  public long block = (int) Math.pow(2,12);
-  public static byte addressradix = 10;
+    private String command_file;
+    private String config_file;
+    private ControlPanel controlPanel ;
+    private Vector memVector = new Vector();
+    private Vector instructVector = new Vector();
+    private String status;
+    private boolean doStdoutLog = false;
+    private boolean doFileLog = false;
+    public int runs;
+    public int runcycles;
+    public long block = (int) Math.pow(2,12);
+    public static byte addressradix = 10;
 
-  public void init( String commands , String config )  
-  {
-    File f = new File( commands );
-    command_file = commands;
-    config_file = config;
-    String line;
-    String tmp = null;
-    String command = "";
-    byte R = 0;
-    byte M = 0;
-    int i = 0;
-    int j = 0;
-    int id = 0;
-    int physical = 0;
-    int physical_count = 0;
-    int inMemTime = 0;
-    int lastTouchTime = 0;
-    int map_count = 0;
-    double power = 14;
-    long high = 0;
-    long low = 0;
-    long addr = 0;
-    long address_limit = (block * virtPageNum+1)-1;
-  
-    if ( config != null )
+    public void init( String commands , String config )  
     {
-      f = new File ( config );
-      try 
-      {
-        DataInputStream in = new DataInputStream(new FileInputStream(f));
-        while ((line = in.readLine()) != null) 
+        File f = new File( commands );
+        command_file = commands;
+        config_file = config;
+        String line;
+        String tmp = null;
+        String command = "";
+        byte R = 0;
+        byte M = 0;
+        int i = 0;
+        int j = 0;
+        int id = 0;
+        int physical = 0;
+        int physical_count = 0;
+        int inMemTime = 0;
+        int lastTouchTime = 0;
+        int map_count = 0;
+        double power = 14;
+        long high = 0;
+        long low = 0;
+        long addr = 0;
+        long address_limit = (block * virtPageNum+1)-1;
+  
+        if ( config != null )
         {
-          if (line.startsWith("numpages")) 
-          { 
-            StringTokenizer st = new StringTokenizer(line);
-            while (st.hasMoreTokens()) 
+            f = new File ( config );
+        try 
+        {
+            DataInputStream in = new DataInputStream(new FileInputStream(f));
+            while ((line = in.readLine()) != null) 
             {
-              tmp = st.nextToken();
-              virtPageNum = Common.s2i(st.nextToken()) - 1;
-              if ( virtPageNum < 2 || virtPageNum > 63 )
-              {
-                System.out.println("MemoryManagement: numpages out of bounds.");
-                System.exit(-1);
-              }
-              address_limit = (block * virtPageNum+1)-1;
+                if (line.startsWith("numpages")) 
+                { 
+                    StringTokenizer st = new StringTokenizer(line);
+                    while (st.hasMoreTokens()) 
+                    {
+                        tmp = st.nextToken();
+                        virtPageNum = Common.s2i(st.nextToken()) - 1;
+                        if ( virtPageNum < 2 || virtPageNum > 63 )
+                        {
+                            System.out.println("MemoryManagement: numpages out of bounds.");
+                            System.exit(-1);
+                        }
+                        address_limit = (block * virtPageNum+1)-1;
+                    }
+                }
             }
-          }
+            in.close();
+        } catch (IOException e) { /* Handle exceptions */ }
+        for (i = 0; i <= virtPageNum; i++) 
+        {
+            high = (block * (i + 1))-1;
+            low = block * i;
+            memVector.addElement(new Page(i, -1, R, M, 0, 0, high, low));
         }
-        in.close();
-      } catch (IOException e) { /* Handle exceptions */ }
-      for (i = 0; i <= virtPageNum; i++) 
-      {
-        high = (block * (i + 1))-1;
-        low = block * i;
-        memVector.addElement(new Page(i, -1, R, M, 0, 0, high, low));
-      }
-      try 
-      {
-        DataInputStream in = new DataInputStream(new FileInputStream(f));
-        while ((line = in.readLine()) != null) 
+
+        try 
+        {
+            DataInputStream in = new DataInputStream(new FileInputStream(f));
+            while ((line = in.readLine()) != null) 
 
         {
-          if (line.startsWith("memset")) 
-          { 
-            StringTokenizer st = new StringTokenizer(line);
-            st.nextToken();
-            while (st.hasMoreTokens()) 
+            if (line.startsWith("memset")) 
+            {     
+                StringTokenizer st = new StringTokenizer(line);
+                st.nextToken();
+                while (st.hasMoreTokens()) 
+                { 
+                    id = Common.s2i(st.nextToken());
+                tmp = st.nextToken();
+                if (tmp.startsWith("x")) 
+                {
+                    physical = -1;
+                } 
+                else 
+                {
+                    physical = Common.s2i(tmp);
+                }
+                if ((0 > id || id > virtPageNum) || (-1 > physical || physical > ((virtPageNum - 1) / 2)))
+                {
+                    System.out.println("MemoryManagement: Invalid page value in " + config);
+                    System.exit(-1);
+                }
+                R = Common.s2b(st.nextToken());
+                if (R < 0 || R > 1)
+                {
+                    System.out.println("MemoryManagement: Invalid R value in " + config);
+                    System.exit(-1);
+                }
+                M = Common.s2b(st.nextToken());
+                if (M < 0 || M > 1)
+                {
+                    System.out.println("MemoryManagement: Invalid M value in " + config);
+                    System.exit(-1);
+                }
+                inMemTime = Common.s2i(st.nextToken());
+                if (inMemTime < 0)
+                {
+                    System.out.println("MemoryManagement: Invalid inMemTime in " + config);
+                    System.exit(-1);
+                }
+                lastTouchTime = Common.s2i(st.nextToken());
+                if (lastTouchTime < 0)
+                {
+                    System.out.println("MemoryManagement: Invalid lastTouchTime in " + config);
+                    System.exit(-1);
+                }
+                Page page = (Page) memVector.elementAt(id);
+                page.physical = physical;
+                page.R = R;
+                page.M = M;
+                page.inMemTime = inMemTime;
+                page.lastTouchTime = lastTouchTime;
+            }
+          }
+            if (line.startsWith("enable_logging")) 
             { 
-              id = Common.s2i(st.nextToken());
-              tmp = st.nextToken();
-              if (tmp.startsWith("x")) 
-              {
-                physical = -1;
-              } 
-              else 
-              {
-                physical = Common.s2i(tmp);
-              }
-              if ((0 > id || id > virtPageNum) || (-1 > physical || physical > ((virtPageNum - 1) / 2)))
-              {
-                System.out.println("MemoryManagement: Invalid page value in " + config);
-                System.exit(-1);
-              }
-              R = Common.s2b(st.nextToken());
-              if (R < 0 || R > 1)
-              {
-                System.out.println("MemoryManagement: Invalid R value in " + config);
-                System.exit(-1);
-              }
-              M = Common.s2b(st.nextToken());
-              if (M < 0 || M > 1)
-              {
-                 System.out.println("MemoryManagement: Invalid M value in " + config);
-                 System.exit(-1);
-              }
-              inMemTime = Common.s2i(st.nextToken());
-              if (inMemTime < 0)
-              {
-                System.out.println("MemoryManagement: Invalid inMemTime in " + config);
-                System.exit(-1);
-              }
-              lastTouchTime = Common.s2i(st.nextToken());
-              if (lastTouchTime < 0)
-              {
-                System.out.println("MemoryManagement: Invalid lastTouchTime in " + config);
-                System.exit(-1);
-              }
-              Page page = (Page) memVector.elementAt(id);
-              page.physical = physical;
-              page.R = R;
-              page.M = M;
-              page.inMemTime = inMemTime;
-              page.lastTouchTime = lastTouchTime;
+                StringTokenizer st = new StringTokenizer(line);
+                while (st.hasMoreTokens()) 
+                {
+                if ( st.nextToken().startsWith( "true" ) )
+                {
+                    doStdoutLog = true;
+                }              
+                }
             }
+            if (line.startsWith("log_file")) 
+            { 
+                StringTokenizer st = new StringTokenizer(line);
+                while (st.hasMoreTokens()) 
+                {
+                    tmp = st.nextToken();
+                }
+                if ( tmp.startsWith( "log_file" ) )
+                {
+                    doFileLog = false;
+                    output = "tracefile";
+                }              
+                else
+                {
+                    doFileLog = true;
+                    doStdoutLog = false;
+                    output = tmp;
+                }
+            }
+            
+            if (line.startsWith("pagesize")) 
+            { 
+                StringTokenizer st = new StringTokenizer(line);
+                while (st.hasMoreTokens()) 
+                {
+                    tmp = st.nextToken();
+                    tmp = st.nextToken();
+                    if ( tmp.startsWith( "power" ) )
+                    {
+                        power = (double) Integer.parseInt(st.nextToken());
+                    block = (int) Math.pow(2,power);
+                    }
+                    else
+                    {
+                        block = Long.parseLong(tmp,10);             
+                    }
+                    address_limit = (block * virtPageNum+1)-1;
+                }
+                if ( block < 64 || block > Math.pow(2,26))
+                {
+                    System.out.println("MemoryManagement: pagesize is out of bounds");
+                    System.exit(-1);
+                }
+                for (i = 0; i <= virtPageNum; i++) 
+                {
+                    Page page = (Page) memVector.elementAt(i);
+                    page.high = (block * (i + 1))-1;
+                    page.low = block * i;
+                }
           }
-          if (line.startsWith("enable_logging")) 
-          { 
+
+        if (line.startsWith("addressradix")) 
+        { 
             StringTokenizer st = new StringTokenizer(line);
             while (st.hasMoreTokens()) 
             {
-              if ( st.nextToken().startsWith( "true" ) )
-              {
-                doStdoutLog = true;
-              }              
-            }
-          }
-          if (line.startsWith("log_file")) 
-          { 
-            StringTokenizer st = new StringTokenizer(line);
-            while (st.hasMoreTokens()) 
-            {
-              tmp = st.nextToken();
-            }
-            if ( tmp.startsWith( "log_file" ) )
-            {
-              doFileLog = false;
-              output = "tracefile";
-            }              
-            else
-            {
-              doFileLog = true;
-              doStdoutLog = false;
-              output = tmp;
-            }
-          }
-          if (line.startsWith("pagesize")) 
-          { 
-            StringTokenizer st = new StringTokenizer(line);
-            while (st.hasMoreTokens()) 
-            {
-              tmp = st.nextToken();
-              tmp = st.nextToken();
-              if ( tmp.startsWith( "power" ) )
-              {
-                power = (double) Integer.parseInt(st.nextToken());
-                block = (int) Math.pow(2,power);
-              }
-              else
-              {
-                block = Long.parseLong(tmp,10);             
-              }
-              address_limit = (block * virtPageNum+1)-1;
-            }
-            if ( block < 64 || block > Math.pow(2,26))
-            {
-              System.out.println("MemoryManagement: pagesize is out of bounds");
-              System.exit(-1);
-            }
-            for (i = 0; i <= virtPageNum; i++) 
-            {
-              Page page = (Page) memVector.elementAt(i);
-              page.high = (block * (i + 1))-1;
-              page.low = block * i;
-            }
-          }
-          if (line.startsWith("addressradix")) 
-          { 
-            StringTokenizer st = new StringTokenizer(line);
-            while (st.hasMoreTokens()) 
-            {
-              tmp = st.nextToken();
-              tmp = st.nextToken();
-              addressradix = Byte.parseByte(tmp);
-              if ( addressradix < 0 || addressradix > 20 )
-              {
-                System.out.println("MemoryManagement: addressradix out of bounds.");
-                System.exit(-1);
-              }
+                tmp = st.nextToken();
+                tmp = st.nextToken();
+                addressradix = Byte.parseByte(tmp);
+                if ( addressradix < 0 || addressradix > 20 )
+                {
+                    System.out.println("MemoryManagement: addressradix out of bounds.");
+                    System.exit(-1);
+                }
             }
           }
         }
