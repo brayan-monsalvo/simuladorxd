@@ -597,7 +597,7 @@ public class Kernel extends Thread
   	{
     	int i = 0;
 
-		//se obtiene una instruccion del vector de instrucciones
+		//se obtiene una instruccion del vector de instrucciones correspondiente al primer ciclo
 		Instruction instruct = ( Instruction ) instructVector.elementAt( runs );
 
 		//se imprime la direccion de la instruccion (en decimal)
@@ -605,15 +605,21 @@ public class Kernel extends Thread
 
 		//imprime en ControlPanel la informacion de la pagina donde se encuentra
 		//la instruccion
-		
 		getPage( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
+
+		//si anteriormente indicada que hubo fallo de pagina, se actualiza su valor
 		if ( controlPanel.pageFaultValueLabel.getText() == "YES" ) 
 		{
 			controlPanel.pageFaultValueLabel.setText( "NO" );
 		}
+
+		//si la instruccion indica READ
 		if ( instruct.inst.startsWith( "READ" ) ) 
 		{
+			//se obtiene la pagina en donde se encuentra ubicada la instruccion
 			Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
+
+			//si la pagina no se encuentra en memoria fisica
 			if ( page.physical == -1 ) 
 			{
 				if ( doFileLog )
@@ -624,13 +630,22 @@ public class Kernel extends Thread
 				{
 					System.out.println( "READ " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
 				}
+
+				//se reemplaza la pagina 
 				PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+
+				//el ControlPanel indica que hubo un fallo de pagina
 				controlPanel.pageFaultValueLabel.setText( "YES" );
 			} 
+			//si la pagina se encuentra en memoria fisica
 			else 
 			{
+				//el atributo READ se vuelve 1
 				page.R = 1;
+
+				//como ya existia la pagina, se actualiza el tiempo en que fue referenciada
 				page.lastTouchTime = 0;   
+
 				if ( doFileLog )
 				{
 					printLogFile( "READ " + Long.toString( instruct.addr , addressradix ) + " ... okay" );
@@ -642,9 +657,13 @@ public class Kernel extends Thread
 			}
 		}
 
+		//si la instruccion indica WRITE
 		if ( instruct.inst.startsWith( "WRITE" ) ) 
 		{
+			//se obtiene la pagina virtual en donde se encuentra ubicada la instruccion
 			Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
+
+			//si la pagina no esta en memoria fisica
 			if ( page.physical == -1 ) 
 			{
 				if ( doFileLog )
@@ -655,12 +674,23 @@ public class Kernel extends Thread
 				{
 					System.out.println( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
 				}
-				PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );          controlPanel.pageFaultValueLabel.setText( "YES" );
+
+				//se reemplaza la pagina 
+				PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );          
+
+				//se indica en el ControlPanel que hubo un fallo de pagina
+				controlPanel.pageFaultValueLabel.setText( "YES" );
 			} 
+
+			//si la pagina virtual se encuentra en memoria fisica
 			else 
 			{
+				//el atributo MODIFIED se vuelve 1
 				page.M = 1;
+
+				//como ya existia la pagina, se actualiza el tiempo en que fue referenciada
 				page.lastTouchTime = 0;
+
 				if ( doFileLog )
 				{
 					printLogFile( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... okay" );
@@ -671,19 +701,31 @@ public class Kernel extends Thread
 				}
 			}
 		}
+
+		//se recorren todas las paginas virtuales
 		for ( i = 0; i < virtPageNum; i++ ) 
 		{
+			//se obtiene la pagina i
 			Page page = ( Page ) memVector.elementAt( i );
+
+			//si el atributo READ de la pagina es 1 
+			//y ademas fue referenciada anteriormente
 			if ( page.R == 1 && page.lastTouchTime == 10 ) 
 			{
 				page.R = 0;
 			}
+
+			//si la pagina virtual tiene pagina fisica
 			if ( page.physical != -1 ) 
 			{
+				//aumenta el tiempo en que ha estado en memoria principal
 				page.inMemTime = page.inMemTime + 10;
+
+				//aumenta el tiempo que ha pasado desde que fue referenciada
 				page.lastTouchTime = page.lastTouchTime + 10;
 			}
 		}
+		//aumenta el contador de ciclo para pasar a la siguiente instruccion
 		runs++;
 		controlPanel.timeValueLabel.setText( Integer.toString( runs*10 ) + " (ns)" );
   	}

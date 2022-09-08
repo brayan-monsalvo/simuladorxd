@@ -50,6 +50,11 @@ public class PageFault {
      * @param controlPanel represents the graphical element of the 
      *   simulator, and allows one to modify the current display.
      */
+
+	// + recibe el vector con todas las paginas virtuales Vector mem
+	// + recibe el numero de paginas virtuales
+	// + recibe el numero de pagina virtual donde se encuentra la instruccion con el comando READ
+	// + recibe el ControlPanel
   	public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel ) 
   	{
 		int count = 0;
@@ -59,38 +64,75 @@ public class PageFault {
 		int map_count = 0;
 		boolean mapped = false;
 
+		//mientras no se haya mapeado toda la memoria virtual o 
+		//mientras el contador sea diferente al numero de paginas virtuales
 		while ( ! (mapped) || count != virtPageNum ) 
 		{
+			//se obtiene la pagina count (iniciando en 0)
 			Page page = ( Page ) mem.elementAt( count );
+
+			//si la pagina virtual tiene pagina fisica, 
+			//esto quiere decir que la primera pagina que este en memoria principal
+			//sera reemplazada (FIFO)
 			if ( page.physical != -1 ) 
 			{
+				//si es la primer pagina virtual y ademas es la primera pagina
 				if (firstPage == -1) {
+					
+					//la ubicacion de la primer pagina virtual se guarda en firstPage
 					firstPage = count;
 				}
+
+				//si la primera pagina obtenida de la lista de paginas virtuales se encuentra en memoria virtual, 
+				//y ademas ya tiene tiempo en memoria principal
 				if (page.inMemTime > oldestTime) {
+
+					//se almacena el tiempo que ha pasado en memoria principal la pagina
 					oldestTime = page.inMemTime;
+
+					//se guarda el numero de pagina mas antigua 
 					oldestPage = count;
+
 					mapped = true;
 				}
 			}
-
+			
+			//el numero de pagina avanza
 			count++;
+
+			//si el numero de pagina es igual al total de paginas virtuales
 			if ( count == virtPageNum ) 
 			{
 				mapped = true;
 			}
 		}
 
+		
 		if (oldestPage == -1) 
 		{
 			oldestPage = firstPage;
 		}
 		
 		Page page = ( Page ) mem.elementAt( oldestPage );
+
+		//se obtiene la pagina virtual donde se encuentra la instruccion
 		Page nextpage = ( Page ) mem.elementAt( replacePageNum );
+
+		//se remueve la pagina
 		controlPanel.removePhysicalPage( oldestPage );
+
+		//se establece la direccion fisica de la pagina recien removida a la pagina 
+		//con la instruccion
 		nextpage.physical = page.physical;
+
+		//se anade esta pagina 
 		controlPanel.addPhysicalPage( nextpage.physical , replacePageNum );
+
+		/*la pagina que fue removida se coloca su tiempo memoria  en 0, 
+		 * el ultimo momento en que fue referencia tambien a 0,
+		 * READ y Modifed 0 
+		 * ademas se coloca que no tiene pagina fisica 
+		*/
 		page.inMemTime = 0;
 		page.lastTouchTime = 0;
 		page.R = 0;
