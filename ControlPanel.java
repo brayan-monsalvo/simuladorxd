@@ -76,6 +76,9 @@ public class ControlPanel extends Frame
   Label timeValueLabel = new Label("0" , Label.LEFT) ;
   Label instructionValueLabel = new Label("NONE" , Label.LEFT) ;
   Label addressValueLabel = new Label("NULL" , Label.LEFT) ;
+
+  Label valorRangoSegmento = new Label("NULL", Label.LEFT);
+
   Label pageFaultValueLabel = new Label("NO" , Label.LEFT) ;
   Label virtualPageValueLabel = new Label("x" , Label.LEFT) ;
   Label physicalPageValueLabel = new Label("0" , Label.LEFT) ;
@@ -85,6 +88,12 @@ public class ControlPanel extends Frame
   Label lastTouchTimeValueLabel = new Label("0" , Label.LEFT) ;
   Label lowValueLabel = new Label("0" , Label.LEFT) ;
   Label highValueLabel = new Label("0" , Label.LEFT) ;
+
+  Label valorSegmento1 = new Label("NULL", Label.LEFT);
+  Label valorSegmento2 = new Label("NULL", Label.LEFT);
+  Label valorSegmento3 = new Label("NULL", Label.LEFT);
+  Label valorSegmento4 = new Label("NULL", Label.LEFT);
+
   Label l0 = new Label(null, Label.CENTER);
   Label l1 = new Label(null, Label.CENTER);
   Label l2 = new Label(null, Label.CENTER);
@@ -522,32 +531,47 @@ public class ControlPanel extends Frame
     addressValueLabel.reshape(385,60+25,230,15);
     add( addressValueLabel );
 
-    pageFaultValueLabel.reshape( 385,90+25,100,15 );
+    valorRangoSegmento.reshape(385,75+25,230,15);
+    add(valorRangoSegmento);
+
+    pageFaultValueLabel.reshape( 385,105+25,100,15 );
     add( pageFaultValueLabel );
 
-    virtualPageValueLabel.reshape( 395,120+25,200,15 );
+    virtualPageValueLabel.reshape( 395,135+25,200,15 );
     add( virtualPageValueLabel );
 
-    physicalPageValueLabel.reshape( 395,135+25,200,15 );
+    physicalPageValueLabel.reshape( 395,150+25,200,15 );
     add( physicalPageValueLabel );
 
-    RValueLabel.reshape( 395,150+25,200,15 );
+    RValueLabel.reshape( 395,165+25,200,15 );
     add( RValueLabel );
 
-    MValueLabel.reshape( 395,165+25,200,15 );
+    MValueLabel.reshape( 395,180+25,200,15 );
     add( MValueLabel );
 
-    inMemTimeValueLabel.reshape(395,180+25,200,15 );
+    inMemTimeValueLabel.reshape(395,195+25,200,15 );
     add( inMemTimeValueLabel );
 
-    lastTouchTimeValueLabel.reshape( 395,195+25,200,15 );
+    lastTouchTimeValueLabel.reshape( 395,210+25,200,15 );
     add( lastTouchTimeValueLabel );
 
-    lowValueLabel.reshape( 395,210+25,230,15 );
+    lowValueLabel.reshape( 395,225+25,230,15 );
     add( lowValueLabel );
 
-    highValueLabel.reshape( 395,225+25,230,15 );
+    highValueLabel.reshape( 395,240+25,230,15 );
     add( highValueLabel );
+
+    valorSegmento1.reshape( 395,270+25,230,15 );
+    add( valorSegmento1 );
+
+    valorSegmento2.reshape( 395,285+25,230,15 );
+    add( valorSegmento2 );
+
+    valorSegmento3.reshape( 395,300+25,230,15 );
+    add( valorSegmento3 );
+
+    valorSegmento4.reshape( 395,315+25,230,15 );
+    add( valorSegmento4 );
 
     Label virtualOneLabel = new Label( "virtual" , Label.CENTER) ;
     virtualOneLabel.reshape(0,15+25,70,15); 
@@ -581,41 +605,62 @@ public class ControlPanel extends Frame
     addressLabel.reshape(285,60+25,85,15);
     add(addressLabel);
 
+    Label rangoSegmento = new Label("segmento: " , Label.LEFT) ;
+    rangoSegmento.reshape(285,75+25,85,15);
+    add(rangoSegmento);
+
     Label pageFaultLabel = new Label("page fault: " , Label.LEFT) ;
-    pageFaultLabel.reshape(285,90+25,100,15);
+    pageFaultLabel.reshape(285,105+25,100,15);
     add(pageFaultLabel);
 
     Label virtualPageLabel = new Label("virtual page: " , Label.LEFT) ;
-    virtualPageLabel.reshape(285,120+25,110,15);
+    virtualPageLabel.reshape(285,135+25,110,15);
     add(virtualPageLabel);
 
     Label physicalPageLabel = new Label("physical page: " , Label.LEFT) ;
-    physicalPageLabel.reshape(285,135+25,110,15);
+    physicalPageLabel.reshape(285,150+25,110,15);
     add(physicalPageLabel);
 
     Label RLabel = new Label("R: ", Label.LEFT) ;
-    RLabel.reshape(285,150+25,110,15);
+    RLabel.reshape(285,165+25,110,15);
     add(RLabel);
 
     Label MLabel = new Label("M: " , Label.LEFT) ;
-    MLabel.reshape(285,165+25,110,15);
+    MLabel.reshape(285,180+25,110,15);
     add(MLabel);
 
     Label inMemTimeLabel = new Label("inMemTime: " , Label.LEFT) ;
-    inMemTimeLabel.reshape(285,180+25,110,15);
+    inMemTimeLabel.reshape(285,195+25,110,15);
     add(inMemTimeLabel);
 
     Label lastTouchTimeLabel = new Label("lastTouchTime: " , Label.LEFT) ;
-    lastTouchTimeLabel.reshape(285,195+25,110,15);
+    lastTouchTimeLabel.reshape(285,210+25,110,15);
     add(lastTouchTimeLabel);
 
     Label lowLabel = new Label("low: " , Label.LEFT) ;
-    lowLabel.reshape(285,210+25,110,15);
+    lowLabel.reshape(285,225+25,110,15);
     add(lowLabel);
 
     Label highLabel = new Label("high: " , Label.LEFT) ;
-    highLabel.reshape(285,225+25,110,15);
+    highLabel.reshape(285,240+25,110,15);
     add(highLabel);
+
+    Label segmento1 = new Label("SEG 1: " , Label.LEFT) ;
+    segmento1.reshape(285,270+25,110,15);
+    add(segmento1);
+
+    Label segmento2 = new Label("SEG 2: " , Label.LEFT) ;
+    segmento2.reshape(285,285+25,110,15);
+    add(segmento2);
+
+    Label segmento3 = new Label("SEG 3: " , Label.LEFT) ;
+    segmento3.reshape(285,300+25,110,15);
+    add(segmento3);
+
+    Label segmento4 = new Label("SEG 4: " , Label.LEFT) ;
+    segmento4.reshape(285,315+25,110,15);
+    add(segmento4);
+
 
     l0.reshape( 70, (2)*15+25, 60, 15 );
     l0.setForeground( Color.red );
@@ -953,6 +998,15 @@ public class ControlPanel extends Frame
     lastTouchTimeValueLabel.setText( Integer.toString( page.lastTouchTime ) );
     lowValueLabel.setText(Long.toString( page.low , Kernel.addressradix ) );
     highValueLabel.setText(Long.toString( page.high , Kernel.addressradix ) );
+
+    valorSegmento1.setText(page.segmento1);
+    valorSegmento2.setText(page.segmento2);
+    valorSegmento3.setText(page.segmento3);
+    valorSegmento4.setText(page.segmento4);
+  }
+
+  public void paintInfoInstruct(Instruction inst){
+    valorRangoSegmento.setText("Seg. "+inst.segment);
   }
 
   public void setStatus(String status) {

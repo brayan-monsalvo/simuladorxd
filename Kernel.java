@@ -1,7 +1,7 @@
 import java.lang.Thread;
 import java.io.*;
 import java.util.*;
-import Page;
+
 
 public class Kernel extends Thread
 {
@@ -15,14 +15,14 @@ public class Kernel extends Thread
     private String command_file;
     private String config_file;
     private ControlPanel controlPanel ;
-    private Vector memVector = new Vector();
+    private Vector <Page> memVector = new <Page>Vector();
     private Vector instructVector = new Vector();
     private String status;
     private boolean doStdoutLog = false;
     private boolean doFileLog = false;
     public int runs;
     public int runcycles;
-    public long block = (int) Math.pow(2,12);
+    public long block = (int) Math.pow(2,14);
     public static byte addressradix = 10;
 
     public void init( String commands , String config )  
@@ -115,6 +115,7 @@ public class Kernel extends Thread
 				+ high - limite superior de la pagina virtual
 				+ low - limite inferior de la pagina virtual*/
 				memVector.addElement(new Page(i, -1, R, M, 0, 0, high, low));
+			
 			}
 
 			try 
@@ -152,7 +153,6 @@ public class Kernel extends Thread
 							{
 								//se convierte el token (string) a entero, almacenando en
 								//physical el numero de pagina en memoria fisica
-
 								physical = Common.s2i(tmp);
 							}
 
@@ -318,6 +318,8 @@ public class Kernel extends Thread
 								System.out.println("MemoryManagement: addressradix out of bounds.");
 								System.exit(-1);
 							}
+
+
 						}
 					}
 				}
@@ -543,6 +545,10 @@ public class Kernel extends Thread
     	Page page = ( Page ) memVector.elementAt( pageNum );
     	controlPanel.paintInfoPage( page );
   	}
+
+	public void getInstructInfo(Instruction in){
+		controlPanel.paintInfoInstruct(in);
+	}
 	
 	private void printLogFile(String message)
   	{
@@ -596,16 +602,30 @@ public class Kernel extends Thread
   	public void step()
   	{
     	int i = 0;
+		int numeroPagina;
 
 		//se obtiene una instruccion del vector de instrucciones correspondiente al primer ciclo
 		Instruction instruct = ( Instruction ) instructVector.elementAt( runs );
+		
+		//se imprime la instruccion (READ o WRITE)
+		controlPanel.instructionValueLabel.setText( instruct.inst );
 
-		//se imprime la direccion de la instruccion (en decimal)
-		controlPanel.addressValueLabel.setText( Long.toString( instruct.addr , addressradix ) );
+		//se imprime la direccion de la instruccion (en hexadecimal)
+		controlPanel.addressValueLabel.setText( Long.toString( instruct.addr ,  addressradix));
+		
+		//se guarda el numero de pagina donde se encuentra la instruccion
+		numeroPagina = Virtual2Physical.pageNum(instruct.addr, virtPageNum, block);
 
+		//se le asigna a la instruccion el numero de pagina donde se encuentra
+		instruct.setNumVirtualPage(numeroPagina);
+
+		//se asigna la pagina a la que pertenece la instruccion
+		instruct.setPage((Page)memVector.elementAt(numeroPagina));
+		
 		//imprime en ControlPanel la informacion de la pagina donde se encuentra
 		//la instruccion
-		getPage( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
+		getPage( numeroPagina );
+		getInstructInfo(instruct);
 
 		//si anteriormente indicada que hubo fallo de pagina, se actualiza su valor
 		if ( controlPanel.pageFaultValueLabel.getText() == "YES" ) 
@@ -617,7 +637,7 @@ public class Kernel extends Thread
 		if ( instruct.inst.startsWith( "READ" ) ) 
 		{
 			//se obtiene la pagina en donde se encuentra ubicada la instruccion
-			Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
+			Page page = ( Page ) memVector.elementAt( numeroPagina );
 
 			//si la pagina no se encuentra en memoria fisica
 			if ( page.physical == -1 ) 
@@ -632,7 +652,7 @@ public class Kernel extends Thread
 				}
 
 				//se reemplaza la pagina 
-				PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+				PageFault.replacePage( memVector , virtPageNum , numeroPagina , controlPanel );
 
 				//el ControlPanel indica que hubo un fallo de pagina
 				controlPanel.pageFaultValueLabel.setText( "YES" );
@@ -661,7 +681,7 @@ public class Kernel extends Thread
 		if ( instruct.inst.startsWith( "WRITE" ) ) 
 		{
 			//se obtiene la pagina virtual en donde se encuentra ubicada la instruccion
-			Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
+			Page page = ( Page ) memVector.elementAt( numeroPagina );
 
 			//si la pagina no esta en memoria fisica
 			if ( page.physical == -1 ) 
@@ -676,7 +696,7 @@ public class Kernel extends Thread
 				}
 
 				//se reemplaza la pagina 
-				PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );          
+				PageFault.replacePage( memVector , virtPageNum , numeroPagina , controlPanel );          
 
 				//se indica en el ControlPanel que hubo un fallo de pagina
 				controlPanel.pageFaultValueLabel.setText( "YES" );
@@ -746,6 +766,11 @@ public class Kernel extends Thread
 		controlPanel.lastTouchTimeValueLabel.setText( "0" ) ;
 		controlPanel.lowValueLabel.setText( "0" ) ;
 		controlPanel.highValueLabel.setText( "0" ) ;
+		controlPanel.valorSegmento1.setText("NULL");
+		controlPanel.valorSegmento2.setText("NULL");
+		controlPanel.valorSegmento3.setText("NULL");
+		controlPanel.valorSegmento4.setText("NULL");
+		controlPanel.valorRangoSegmento.setText("NULL");
 		init( command_file , config_file );
   	}
 }

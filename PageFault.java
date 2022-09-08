@@ -8,7 +8,6 @@ page replacement algorithm.
 // Algorithm as described in the Memory Management section.
 
 import java.util.*;
-import Page;
 
 public class PageFault {
 
