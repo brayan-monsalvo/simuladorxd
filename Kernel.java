@@ -373,7 +373,7 @@ public class Kernel extends Thread
 						//si el tipo de numero es binario
 						if ( tmp.startsWith( "bin" ) )
 						{
-							//convierte el siguiente token (direccion de memoria virtual) a long 
+							//convierte el siguiente token (direccion de memoria virtual) a decimal 
 							//y lo guarda en addr
 							addr = Long.parseLong(st.nextToken(),2);             
 						}
@@ -381,14 +381,14 @@ public class Kernel extends Thread
 						//si el tipo de numero es octal
 						else if ( tmp.startsWith( "oct" ) )
 						{
-							//convierte el siguiente token a long y lo guarda en addr
+							//convierte el siguiente token a decimal y lo guarda en addr
 							addr = Long.parseLong(st.nextToken(),8);
 						}
 
 						//si el tipo de numero es hexadecimal
 						else if ( tmp.startsWith( "hex" ) )
 						{
-							//convierte el siguiente token a long y lo guarda en addr
+							//convierte el siguiente token a decimal y lo guarda en addr
 							addr = Long.parseLong(st.nextToken(),16);
 						}
 
@@ -597,9 +597,10 @@ public class Kernel extends Thread
   	{
     	int i = 0;
 
-		//
+		//se obtiene una instruccion del vector de instrucciones
 		Instruction instruct = ( Instruction ) instructVector.elementAt( runs );
-		controlPanel.instructionValueLabel.setText( instruct.inst );
+
+		//
 		controlPanel.addressValueLabel.setText( Long.toString( instruct.addr , addressradix ) );
 		getPage( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
 		if ( controlPanel.pageFaultValueLabel.getText() == "YES" ) 
