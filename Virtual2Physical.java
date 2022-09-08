@@ -6,6 +6,7 @@ public class Virtual2Physical
 	// numpages: numero de paginas virtuales
 	// tamano de la pagina 
 	
+	//devuelve el numero de pagina donde se encuentra la instruccion de memory.conf
   	public static int pageNum ( long memaddr , int numpages , long block )
   	{
 		int i = 0;

@@ -373,7 +373,7 @@ public class Kernel extends Thread
 						//si el tipo de numero es binario
 						if ( tmp.startsWith( "bin" ) )
 						{
-							//convierte el siguiente token (direccion de memoria virtual) a decimal 
+							//convierte el siguiente token (direccion de la instruccion) a decimal 
 							//y lo guarda en addr
 							addr = Long.parseLong(st.nextToken(),2);             
 						}
@@ -381,21 +381,21 @@ public class Kernel extends Thread
 						//si el tipo de numero es octal
 						else if ( tmp.startsWith( "oct" ) )
 						{
-							//convierte el siguiente token a decimal y lo guarda en addr
+							//convierte la direccion de la instruccion a decimal y lo guarda en addr
 							addr = Long.parseLong(st.nextToken(),8);
 						}
 
 						//si el tipo de numero es hexadecimal
 						else if ( tmp.startsWith( "hex" ) )
 						{
-							//convierte el siguiente token a decimal y lo guarda en addr
+							//convierte la direccion de la instruccion a decimal y lo guarda en addr
 							addr = Long.parseLong(st.nextToken(),16);
 						}
 
 						//si no especifica el tipo de numero
 						else
 						{
-							//guarda en addr la direccion de memoria (en decimal supongo)
+							//guarda en addr la direccion de la instruccion a decimal
 							addr = Long.parseLong(tmp);
 						}
 
@@ -537,11 +537,11 @@ public class Kernel extends Thread
     	controlPanel = newControlPanel ;
   	}
 
-	//retorna la pagina virtual con el indice pageNum
+	//imprime en ControlPanel la informacion de la pagina numero pageNum
   	public void getPage(int pageNum) 
   	{
     	Page page = ( Page ) memVector.elementAt( pageNum );
-    	controlPanel.paintPage( page );
+    	controlPanel.paintInfoPage( page );
   	}
 	
 	private void printLogFile(String message)
@@ -600,8 +600,12 @@ public class Kernel extends Thread
 		//se obtiene una instruccion del vector de instrucciones
 		Instruction instruct = ( Instruction ) instructVector.elementAt( runs );
 
-		//
+		//se imprime la direccion de la instruccion (en decimal)
 		controlPanel.addressValueLabel.setText( Long.toString( instruct.addr , addressradix ) );
+
+		//imprime en ControlPanel la informacion de la pagina donde se encuentra
+		//la instruccion
+		
 		getPage( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
 		if ( controlPanel.pageFaultValueLabel.getText() == "YES" ) 
 		{
