@@ -677,7 +677,8 @@ public class Kernel extends Thread
 
 		if (instruct.page.id != instruct.pageFinal.id){
 			JOptionPane.showMessageDialog(null, "Error de direccionamiento");
-			System.exit(-1);
+			runs++;
+			return;
 		}
 
 		
