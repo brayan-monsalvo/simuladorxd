@@ -1006,7 +1006,7 @@ public class ControlPanel extends Frame
   }
 
   public void paintInfoInstruct(Instruction inst){
-    valorRangoSegmento.setText("Seg. "+inst.segment);
+    valorRangoSegmento.setText("Seg. "+inst.segment+" - seg. "+inst.segmentFinal);
   }
 
   public void setStatus(String status) {

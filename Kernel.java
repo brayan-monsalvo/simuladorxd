@@ -2,6 +2,8 @@ import java.lang.Thread;
 import java.io.*;
 import java.util.*;
 
+import javax.swing.JOptionPane;
+
 
 public class Kernel extends Thread
 {
@@ -47,6 +49,7 @@ public class Kernel extends Thread
         long high = 0;
         long low = 0;
         long addr = 0;
+		long addrFinal = 0;
         long address_limit = (block * virtPageNum+1)-1;
   
 		//si el archivo memory.conf no es nulo, entonces...
@@ -357,16 +360,24 @@ public class Kernel extends Thread
           			StringTokenizer st = new StringTokenizer(line);
 
 					//temporalmente  se guarda el comando
+					//se descarta
 					tmp = st.nextToken();
 
 					//temporalmente se guarda el tipo de numero (binario, hexa, octa)
 					tmp = st.nextToken();
 
+					//aqui preguntamos si hay 2 tokens restantes (direccion inicial y direccion final)
+					//si no hay exactamente 2 tokens, imprime un error y finaliza el programa
+					if(st.countTokens() != 2){
+						System.out.println("error, falta direccion final y/o inicial");
+						System.exit(-1);
+					}
+
 					//si el token tipo de numero empieza o contiene 'random'
           			if (tmp.startsWith("random")) 
           			{
 						//  ??????
-            			instructVector.addElement(new Instruction(command,Common.randomLong( address_limit )));
+            			instructVector.addElement(new Instruction(command,Common.randomLong( address_limit ), Common.randomLong(address_limit)));
           			} 
           			else 
           			{	
@@ -377,7 +388,8 @@ public class Kernel extends Thread
 						{
 							//convierte el siguiente token (direccion de la instruccion) a decimal 
 							//y lo guarda en addr
-							addr = Long.parseLong(st.nextToken(),2);             
+							addr = Long.parseLong(st.nextToken(),2);
+							addrFinal = Long.parseLong(st.nextToken(),2);             
 						}
 
 						//si el tipo de numero es octal
@@ -385,6 +397,7 @@ public class Kernel extends Thread
 						{
 							//convierte la direccion de la instruccion a decimal y lo guarda en addr
 							addr = Long.parseLong(st.nextToken(),8);
+							addrFinal = Long.parseLong(st.nextToken(),8);
 						}
 
 						//si el tipo de numero es hexadecimal
@@ -392,28 +405,54 @@ public class Kernel extends Thread
 						{
 							//convierte la direccion de la instruccion a decimal y lo guarda en addr
 							addr = Long.parseLong(st.nextToken(),16);
+							addrFinal = Long.parseLong(st.nextToken(),16);
 						}
 
 						//si no especifica el tipo de numero
-						else
+						else if(tmp.startsWith( "dec" ))
 						{
 							//guarda en addr la direccion de la instruccion a decimal
-							addr = Long.parseLong(tmp);
+							addr = Long.parseLong(st.nextToken(), 10);
+							addrFinal = Long.parseLong(st.nextToken(),10);
 						}
+						else {
+							System.out.println("Error, debe especificarse la base de la direccion");
+							System.exit(-1);
+						}
+						
 
 						//si la direccion es menor a 0 o la direccion es mayor al limite de direccionamiento 
 						//virtual, imprime un error y termina el programa
-						if (0 > addr || addr > address_limit)
+						/*if (0 > addr || addr > address_limit || )
 						{
 							System.out.println("MemoryManagement: " + addr + ", Address out of range in " + commands);
 							System.exit(-1);
+						}*/
+
+						//si la direccion inicial es menor que 0
+						//o si la direccion inicial es mayor que la direccion final
+						//o si la direccion final es mayor que el limite de direccionamiento
+						if(0 > addr || addr > addrFinal || addrFinal > address_limit){
+							System.out.println("MemoryManagement: " + addr + ", Address out of range in " + commands);
+							System.out.println("entro aqui w");
+							System.exit(-1);
+							
 						}
 
 						//se almacena en instructVector una nueva instruccion que tiene: 
 						// + comando (READ o WRITE)
 						// + direccion de memoria virtual
-						instructVector.addElement(new Instruction(command,addr));
+						instructVector.addElement(new Instruction(command,addr, addrFinal));
+
+							//lee la 
+						/*if(st.hasMoreTokens()){
+							Instruction inst = (Instruction) instructVector.lastElement();
+							inst.addrFinal = Long.parseLong(st.nextToken(), addressradix);
+							System.out.println("ultima direccion: "+inst.addrFinal);
+						}*/
           			}
+
+					
         		}
     		}
       		in.close();
@@ -435,7 +474,6 @@ public class Kernel extends Thread
       		File trace = new File(output);
       		trace.delete();
 		}
-
 
     	runs = 0;
 
@@ -603,24 +641,45 @@ public class Kernel extends Thread
   	{
     	int i = 0;
 		int numeroPagina;
+		int numeroPaginaFinal;
+		String dirInicial;
+		String dirFinal;
 
 		//se obtiene una instruccion del vector de instrucciones correspondiente al primer ciclo
 		Instruction instruct = ( Instruction ) instructVector.elementAt( runs );
+
+		dirInicial = Long.toString(instruct.addr, addressradix);
+		dirFinal = Long.toString(instruct.addrFinal, addressradix);
 		
 		//se imprime la instruccion (READ o WRITE)
 		controlPanel.instructionValueLabel.setText( instruct.inst );
 
 		//se imprime la direccion de la instruccion (en hexadecimal)
-		controlPanel.addressValueLabel.setText( Long.toString( instruct.addr ,  addressradix));
+		controlPanel.addressValueLabel.setText(dirInicial+" - "+dirFinal);
 		
 		//se guarda el numero de pagina donde se encuentra la instruccion
 		numeroPagina = Virtual2Physical.pageNum(instruct.addr, virtPageNum, block);
+		numeroPaginaFinal = Virtual2Physical.pageNum(instruct.addrFinal, virtPageNum, block);
 
 		//se le asigna a la instruccion el numero de pagina donde se encuentra
 		instruct.setNumVirtualPage(numeroPagina);
+		instruct.setNumVirtualPageFinal(numeroPaginaFinal);
 
 		//se asigna la pagina a la que pertenece la instruccion
 		instruct.setPage((Page)memVector.elementAt(numeroPagina));
+		instruct.setPageFinal((Page)memVector.elementAt(numeroPaginaFinal));
+
+		System.out.println("pagina:"+instruct.page.id);
+		System.out.println("pagina:"+instruct.pageFinal.id);
+
+		System.out.println("seg:"+instruct.segment);
+		System.out.println("seg:"+instruct.segmentFinal);
+
+		if (instruct.page.id != instruct.pageFinal.id){
+			JOptionPane.showMessageDialog(null, "Error de direccionamiento");
+			System.exit(-1);
+		}
+
 		
 		//imprime en ControlPanel la informacion de la pagina donde se encuentra
 		//la instruccion
