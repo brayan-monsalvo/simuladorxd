@@ -1,15 +1,18 @@
 public class Node <E> {
     private E element;
     private Node nextNode;
+    private Node previousNode;
 
-    public Node (E element, Node nextNode){
+    public Node (E element, Node nextNode, Node prevNode){
         this.element = element;
         this.nextNode = nextNode;
+        this.previousNode = prevNode;
     }
 
     public Node (E element){
         this.element = element;
         nextNode = null;
+        previousNode = null;
     }
 
     public E getElement(){
@@ -24,11 +27,23 @@ public class Node <E> {
         return nextNode;
     }
 
+    public Node getPrevNode(){
+        return previousNode;
+    }
+
     public void setNextNode(Node n){
         this.nextNode = n;
     }
 
+    public void setPrevNode(Node n){
+        this.previousNode = n;
+    }
+
     public boolean hasNextNode(){
         return (nextNode != null);
+    }
+
+    public boolean hasPrevNode(){
+        return (previousNode != null);
     }
 }
