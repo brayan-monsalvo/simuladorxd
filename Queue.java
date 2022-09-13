@@ -30,16 +30,30 @@ public class Queue <E> {
         //un nodo temporal que apuntara inicialmente a la cabeza
         Node <E> temp = head;
 
-        do{
+        while(temp.hasNextNode()){
             temp = temp.getNextNode();
-        }while(temp.hasNextNode());
+        }
 
+        /*El nodo temporal es el ultimo de la cola, a ese nodo se le agrega un nuevo nodo que es 
+         * el elemento que se quiere agregar. Despues, a aquel ultimo elemento se le indica que su nodo antecesor
+         * es el nodo temporal
+        */
         temp.setNextNode(new Node<E>(element));
+        temp.getNextNode().setPrevNode(temp);
         numElements++;
     }
 
     public E element(){
         return head.getElement();
+    }
+
+    public E getElement(int index){
+        if (index > getNumberElements()){
+            return null;
+        }
+
+        
+        
     }
 
     public E poll(){
