@@ -7,16 +7,25 @@ public class Node <E> {
         this.nextNode = nextNode;
     }
 
-    public E getInstruction(){
+    public Node (E element){
+        this.element = element;
+        nextNode = null;
+    }
+
+    public E getElement(){
         return element;
     }
 
-    public void setInstruction (E t){
+    public void setElement (E t){
         this.element = t;
     }
 
     public Node getNextNode(){
         return nextNode;
+    }
+
+    public void setNextNode(Node n){
+        this.nextNode = n;
     }
 
     public boolean hasNextNode(){
