@@ -44,25 +44,73 @@ public class Queue <E> {
     }
 
     public E element(){
+        /*Retorna la cabeza de la cola sin retirarla*/
         return head.getElement();
     }
 
     public E getElement(int index){
-        if (index > getNumberElements()){
+        /*Regresa el elemento no. index de la cola*/
+
+        /*si el indice es mayor que el numero de elementos o
+        el indice es menor que 0
+        */
+        if (index > getNumberElements() || index < 0){
             return null;
         }
 
-        
-        
+        //si el indice es 1, se retira la cabeza de la cola 
+        if(index == 1){
+            return poll();
+        }
+
+        Node <E> element = head;
+        Node <E> prevNode;
+        Node <E> nextNode;
+        E temp;
+
+        //este ciclo for ubica a element justo en donde se encuentra el nodo a retirar
+        for(int i = 0; i < index-1; i++){
+            element = element.getNextNode();
+        }
+
+        temp = element.getElement();
+
+        //se guarda el nodo siguiente y previo del elemento a retirar
+        prevNode = element.getPrevNode();
+        nextNode = element.getNextNode();
+
+        //se establece que el nodo previo tiene como nodo siguiente nextNode
+        //y que el nodo siguiente tiene como nodo previo a prevNode
+        //"omitiendo" al nodo que se quiere retirar, eliminando asi de la cola
+        nextNode.setPrevNode( prevNode );
+        prevNode.setNextNode(nextNode);
+
+        numElements--;
+
+        return temp;
     }
 
     public E poll(){
         Node <E> h = head;
 
-        //head.setNextNode( head.getNextNode() );
+        /* 
+         * Si solamente hay un elemento en la cola, se retornara ese elemento, y la cabeza apuntara a nulo
+         * porque no hay ningun nodo predecesor o sucesor
+        */
+        if(getNumberElements() == 1){
+            head = null;
+            numElements--;
+            return h.getElement();
+        }
+
+        /*
+         * si hay mas de 1 elemento, la cola ahora pasa a ser su sucesor, y se establece que la nueva 
+         * cabeza no tiene nodo predecesor
+        */
+        
         head = head.getNextNode();
         head.setPrevNode(null);
-        
+        numElements--;
         return h.getElement();
     }
 
@@ -73,4 +121,5 @@ public class Queue <E> {
     public int getNumberElements(){
         return numElements;
     }
+    
 }
