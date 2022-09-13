@@ -59,8 +59,10 @@ public class Queue <E> {
     public E poll(){
         Node <E> h = head;
 
-        head.setNextNode( head.getNextNode() );
-
+        //head.setNextNode( head.getNextNode() );
+        head = head.getNextNode();
+        head.setPrevNode(null);
+        
         return h.getElement();
     }
 
