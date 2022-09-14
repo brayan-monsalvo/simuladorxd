@@ -48,7 +48,35 @@ public class Queue <E> {
         return head.getElement();
     }
 
-    public E getElement(int index){
+    private Node getNodeAt(int index){
+        //regresa el nodo en la posicion index
+        Node <E> node = head;
+
+        for(int i = 0; i < index-1; i++){
+            node = node.getNextNode();
+        }
+
+        return node;
+    }
+
+    public E elementAt(int index){
+        //regresa el elemento del nodo en la posicion index
+
+        if (index > getNumberElements() || index < 0){
+            return null;
+        }
+
+        Node <E> element = head;
+
+        //este ciclo for ubica a element justo en donde se encuentra el nodo en index
+        for(int i = 0; i < index-1; i++){
+            element = element.getNextNode();
+        }
+
+        return element.getElement();
+    }
+
+    public E pollAt(int index){
         /*Regresa el elemento no. index de la cola*/
 
         /*si el indice es mayor que el numero de elementos o
@@ -63,22 +91,11 @@ public class Queue <E> {
             return poll();
         }
 
-        Node <E> element = head;
-        Node <E> prevNode;
-        Node <E> nextNode;
-        E temp;
-
-        //este ciclo for ubica a element justo en donde se encuentra el nodo a retirar
-        for(int i = 0; i < index-1; i++){
-            element = element.getNextNode();
-        }
-
-        temp = element.getElement();
-
         //se guarda el nodo siguiente y previo del elemento a retirar
-        prevNode = element.getPrevNode();
-        nextNode = element.getNextNode();
-
+        Node <E> element = getNodeAt(index);
+        Node <E> prevNode = element.getPrevNode();
+        Node <E> nextNode = element.getNextNode();
+ 
         //se establece que el nodo previo tiene como nodo siguiente nextNode
         //y que el nodo siguiente tiene como nodo previo a prevNode
         //"omitiendo" al nodo que se quiere retirar, eliminando asi de la cola
@@ -87,7 +104,7 @@ public class Queue <E> {
 
         numElements--;
 
-        return temp;
+        return element.getElement();
     }
 
     public E poll(){
