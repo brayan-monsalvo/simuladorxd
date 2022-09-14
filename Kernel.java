@@ -19,6 +19,7 @@ public class Kernel extends Thread
     private ControlPanel controlPanel ;
     private Vector <Page> memVector = new <Page>Vector();
     private Vector instructVector = new Vector();
+	private Queue <Page> memPhysical = new Queue <Page> ();
     private String status;
     private boolean doStdoutLog = false;
     private boolean doFileLog = false;
@@ -50,7 +51,7 @@ public class Kernel extends Thread
         long low = 0;
         long addr = 0;
 		long addrFinal = 0;
-        long address_limit = (block * virtPageNum+1)-1;
+        long address_limit = Long.parseLong("1048575", 10);
   
 		//si el archivo memory.conf no es nulo, entonces...
         if ( config != null )
@@ -89,7 +90,7 @@ public class Kernel extends Thread
 							}
 
 							//aqui (supongo) que vuelve a calcular el limite de memoria virtual
-							address_limit = (block * virtPageNum+1)-1;
+							//address_limit = (block * virtPageNum+1)-1;
 						}
 					}
 				}
@@ -216,6 +217,8 @@ public class Kernel extends Thread
 							page.M = M;
 							page.inMemTime = inMemTime;
 							page.lastTouchTime = lastTouchTime;
+
+							memPhysical.add(page);
 						}
 					}
 
@@ -285,7 +288,7 @@ public class Kernel extends Thread
 							}
 
 							//ahora, el limite de memoria virtual se establece de 258,048 a 1,048,575
-							address_limit = (block * virtPageNum+1)-1;
+							//address_limit = (block * virtPageNum+1)-1;
 						}
 
 						//si el tamano de la pagina es menor a 64 o mayor a 2^26, imprimira un error y terminara
@@ -432,8 +435,9 @@ public class Kernel extends Thread
 						//si la direccion inicial es menor que 0
 						//o si la direccion inicial es mayor que la direccion final
 						//o si la direccion final es mayor que el limite de direccionamiento
-						if(0 > addr || addr > addrFinal || addrFinal > address_limit){
-							System.out.println("MemoryManagement: " + addr + ", Address out of range in " + commands);
+
+						if(addr < 0 || addr > addrFinal || addrFinal > address_limit){
+							System.out.println("MemoryManagement: " + addrFinal + ", Address out of range: "+addrFinal);
 							System.out.println("entro aqui w");
 							System.exit(-1);
 							
@@ -712,7 +716,7 @@ public class Kernel extends Thread
 				}
 
 				//se reemplaza la pagina 
-				PageFault.replacePage( memVector , virtPageNum , numeroPagina , controlPanel );
+				PageFault.replacePage( memVector , virtPageNum , numeroPagina , controlPanel, memPhysical);
 
 				//el ControlPanel indica que hubo un fallo de pagina
 				controlPanel.pageFaultValueLabel.setText( "YES" );
@@ -722,6 +726,8 @@ public class Kernel extends Thread
 			{
 				//el atributo READ se vuelve 1
 				page.R = 1;
+
+				page.bitReferencia = 1;
 
 				//como ya existia la pagina, se actualiza el tiempo en que fue referenciada
 				page.lastTouchTime = 0;   
@@ -756,7 +762,7 @@ public class Kernel extends Thread
 				}
 
 				//se reemplaza la pagina 
-				PageFault.replacePage( memVector , virtPageNum , numeroPagina , controlPanel );          
+				PageFault.replacePage( memVector , virtPageNum , numeroPagina , controlPanel, memPhysical);          
 
 				//se indica en el ControlPanel que hubo un fallo de pagina
 				controlPanel.pageFaultValueLabel.setText( "YES" );
@@ -767,6 +773,8 @@ public class Kernel extends Thread
 			{
 				//el atributo MODIFIED se vuelve 1
 				page.M = 1;
+
+				page.bitReferencia = 1;
 
 				//como ya existia la pagina, se actualiza el tiempo en que fue referenciada
 				page.lastTouchTime = 0;

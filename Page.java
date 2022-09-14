@@ -14,6 +14,7 @@ public class Page
     public long low;
 	public int segmentSize = 4095;
 	public byte base = 16;
+	public int bitReferencia = 0;
 	String segmento1 = null;
 	String segmento2 = null;
 	String segmento3 = null;
