@@ -789,7 +789,8 @@ public class Kernel extends Thread
 				}
 			}
 		}
-
+		getPage( numeroPagina );
+		
 		//se recorren todas las paginas virtuales
 		for ( i = 0; i < virtPageNum; i++ ) 
 		{

@@ -70,10 +70,11 @@ public class PageFault {
 			if(pagina.bitReferencia == 1){
 				System.out.println("pagina "+pagina.id+" con bit de referencia = "+pagina.bitReferencia);
 				pagina.bitReferencia = 0;
-				pagina = memPhysical.elementAt(cont++);
+				cont += 1;
+				pagina = memPhysical.elementAt(cont);
 				System.out.println(" now : pagina "+pagina.id+" con bit de referencia = "+pagina.bitReferencia);
 			}
-		}while(pagina.bitReferencia != 0);
+		}while(pagina.bitReferencia == 1);
 		
 		Page page = memPhysical.pollAt(cont);
 
