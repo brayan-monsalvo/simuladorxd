@@ -72,7 +72,7 @@ public class PageFault {
 				pagina.bitReferencia = 0;
 				cont += 1;
 				pagina = memPhysical.elementAt(cont);
-				System.out.println(" now : pagina "+pagina.id+" con bit de referencia = "+pagina.bitReferencia);
+				System.out.println(" now : pagina "+memPhysical.elementAt((cont-1)).id+" con bit de referencia = "+memPhysical.elementAt((cont-1)).bitReferencia);
 			}
 		}while(pagina.bitReferencia == 1);
 		
